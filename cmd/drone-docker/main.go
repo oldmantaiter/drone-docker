@@ -222,6 +222,11 @@ func main() {
 			Usage:  "do not use cached intermediate containers",
 			EnvVar: "PLUGIN_NO_CACHE",
 		},
+		cli.BoolTFlag{
+			Name:   "unique.buildname",
+			Usage:  "use unique buildnames (instead of commit SHA)",
+			EnvVar: "PLUGIN_UNIQUE_BUILDNAME",
+		},
 	}
 
 	if err := app.Run(os.Args); err != nil {
@@ -272,6 +277,11 @@ func run(c *cli.Context) error {
 			MTU:           c.String("daemon.mtu"),
 			Experimental:  c.Bool("daemon.experimental"),
 		},
+	}
+
+	// Override the build name with something unique to the step we are building in
+	if c.Bool("unique.buildname") {
+		plugin.Build.Name = fmt.Sprintf("%s-%s-%s", os.Getenv("DRONE_COMMIT_SHA"), os.Getenv("DRONE_STAGE_NAME"), os.Getenv("DRONE_STEP_NAME"))
 	}
 
 	if c.Bool("tags.auto") {
